@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Público - Sistema TI</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    .back-link {
+      position: absolute;
+      left: 20px;
+      top: 20px;
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .header h1 {
+      font-size: 3.5rem;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .header p {
+      font-size: 1.3rem;
+      opacity: 0.95;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      text-align: center;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+    }
+
+    .stat-number {
+      font-size: 3rem;
+      font-weight: bold;
+      color: #667eea;
+      margin: 10px 0;
+    }
+
+    .stat-label {
+      font-size: 1.1rem;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+    }
+
+    .stat-icon {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .tickets-section {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+
+    .section-title {
+      font-size: 1.8rem;
+      color: #333;
+      margin-bottom: 20px;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 10px;
+    }
+
+    .count-badge {
+      font-size: 0.95rem;
+      background: #667eea;
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+
+    .tickets-list {
+      display: grid;
+      gap: 15px;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .ticket-item {
+      background: #f8f9fa;
+      border-left: 5px solid #667eea;
+      padding: 15px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s;
+    }
+
+    .ticket-item:hover {
+      background: #e8e8f0;
+      transform: translateX(5px);
+    }
+
+    .ticket-item.aberto {
+      border-left-color: #ff6b6b;
+    }
+
+    .ticket-item.em_andamento {
+      border-left-color: #ffd43b;
+    }
+
+    .ticket-item.resolvido {
+      border-left-color: #51cf66;
+    }
+
+    .ticket-info {
+      flex: 1;
+    }
+
+    .ticket-number {
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: #333;
+    }
+
+    .ticket-subject {
+      color: #666;
+      font-size: 0.95rem;
+      margin-top: 3px;
+    }
+
+    .ticket-time {
+      color: #999;
+      font-size: 0.85rem;
+      margin-top: 3px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-left: 15px;
+    }
+
+    .status-aberto {
+      background: #ffe0e0;
+      color: #d63031;
+    }
+
+    .status-em_andamento {
+      background: #fff3e0;
+      color: #f39c12;
+    }
+
+    .status-resolvido {
+      background: #e8f5e9;
+      color: #27ae60;
+    }
+
+    .refresh-info {
+      text-align: center;
+      color: #999;
+      font-size: 0.9rem;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 30px;
+      color: #999;
+      font-size: 1.2rem;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 15px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #999;
+    }
+
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    /* Scrollbar customizada */
+    .tickets-list::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .tickets-list::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+
+    .tickets-list::-webkit-scrollbar-thumb {
+      background: #667eea;
+      border-radius: 10px;
+    }
+
+    .tickets-list::-webkit-scrollbar-thumb:hover {
+      background: #764ba2;
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 2rem;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .stat-number {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <a href="/" class="back-link">← Voltar</a>
+      <h1>🎫 Central de Chamados</h1>
+      <p>Status em Tempo Real - Sistema TI</p>
+    </div>
+
+    <!-- Removido: cards de estatística e últimos chamados para público ter menos informação -->
+  </div>
+
+  <!-- Fila de Espera (Pública) -->
+  <div class="tickets-section" style="margin-top: 20px;">
+    <h2 class="section-title" style="display:flex; justify-content:space-between; align-items:center;">
+      <span>Fila de Espera</span>
+      <span class="count-badge"><span id="queueCount">0</span> na fila</span>
+    </h2>
+    <div id="queueList">
+      <div class="loading">
+        <span class="spinner"></span>
+        <span>Carregando fila...</span>
+      </div>
+    </div>
+    <div class="refresh-info">
+      🔄 Atualiza a cada 30 segundos | Última atualização: <span id="lastUpdate">--:--</span>
+    </div>
+  </div>
+
+  <script>
+    let autoRefreshInterval;
+
+    // Formatar tempo
+    function formatDateTime(dateString) {
+      return new Date(dateString).toLocaleString('pt-BR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    // Calcular tempo decorrido
+    function getTimeAgo(dateString) {
+      const now = new Date();
+      const date = new Date(dateString);
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+
+      if (diffMins < 60) return `${diffMins}m atrás`;
+      if (diffHours < 24) return `${diffHours}h atrás`;
+      return `${diffDays}d atrás`;
+    }
+
+    // Carregar dados do dashboard
+    async function loadDashboardData() {
+      try {
+        const ticketsRes = await fetch('/api/tickets');
+        const tickets = ticketsRes.ok ? await ticketsRes.json() : [];
+
+        // Atualizar apenas a fila pública
+        renderQueue(tickets);
+
+        // Atualizar hora
+        const lastUpdateEl = document.getElementById('lastUpdate');
+        if (lastUpdateEl) {
+          lastUpdateEl.textContent = new Date().toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+        }
+
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+      }
+    }
+
+    // Atualizar estatísticas
+    // Removido: updateStats (somente fila pública será exibida)
+
+    // Renderizar lista de chamados
+    // Removido: renderTickets (não exibimos lista de últimos chamados)
+
+    // Renderizar fila de espera pública (chamados abertos)
+    function renderQueue(allTickets) {
+      const container = document.getElementById('queueList');
+      const waiting = (allTickets || [])
+        .filter(t => t.status === 'aberto')
+        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+        .slice(0, 20); // mostrar até 20 em espera
+
+      // Atualizar contador na fila
+      const qc = document.getElementById('queueCount');
+      if (qc) qc.textContent = waiting.length;
+
+      if (waiting.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">🟢</div>
+            <p>Sem itens na fila de espera</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Map de cores por prioridade
+      const prColors = { baixa: '#51cf66', media: '#ffd43b', alta: '#ff6b6b', urgente: '#d63031' };
+
+      container.innerHTML = waiting.map(t => `
+        <div class="ticket-item aberto" style="display:flex; justify-content:space-between; align-items:center;">
+          <div class="ticket-info">
+            <div class="ticket-number">#${t.id} • ${t.department || 'Setor não informado'}</div>
+            <div class="ticket-subject">${(t.subject || 'Chamado').substring(0, 60)} — ${t.description ? t.description.substring(0, 90) : ''}...</div>
+            <div class="ticket-time">Aguardando há ${getTimeAgo(t.created_at)}</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="status-badge status-aberto">aberto</span>
+            <span style="display:inline-block; padding:6px 10px; border-radius:16px; font-weight:600; background:${prColors[t.priority] || '#ccc'}20; color:${prColors[t.priority] || '#555'};">
+              ${t.priority?.toUpperCase() || 'PRIORIDADE' }
+            </span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Inicializar
+    function init() {
+      loadDashboardData();
+
+      // Atualizar a cada 30 segundos
+      autoRefreshInterval = setInterval(loadDashboardData, 30000);
+
+      // Recarregar quando a página voltar ao foco
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          loadDashboardData();
+        }
+      });
+    }
+
+    // Iniciar quando a página carregar
+    document.addEventListener('DOMContentLoaded', init);
+
+    // Limpar intervalo ao sair da página
+    window.addEventListener('beforeunload', () => {
+      if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+    });
+  </script>
+</body>
+</html>

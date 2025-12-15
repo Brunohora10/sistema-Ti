@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acompanhar Chamado - Sistema TI</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dark-mode.css">
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .back-link {
+      position: absolute;
+      left: 20px;
+      top: 20px;
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .track-container {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .search-box {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+
+    .search-box h2 {
+      margin-bottom: 20px;
+      color: var(--primary);
+    }
+
+    .search-form {
+      display: grid;
+      gap: 15px;
+    }
+
+    .ticket-result {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .ticket-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid var(--light);
+    }
+
+    .ticket-number {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    .status-timeline {
+      display: flex;
+      justify-content: space-between;
+      margin: 30px 0;
+      position: relative;
+    }
+
+    .timeline-step {
+      flex: 1;
+      text-align: center;
+      position: relative;
+    }
+
+    .timeline-step::before {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--light);
+      z-index: 1;
+    }
+
+    .timeline-step:first-child::before {
+      left: 50%;
+    }
+
+    .timeline-step:last-child::before {
+      right: 50%;
+    }
+
+    .timeline-dot {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--light);
+      border: 3px solid var(--light);
+      margin: 0 auto 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .timeline-step.active .timeline-dot {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .timeline-step.completed .timeline-dot {
+      background: var(--success);
+      border-color: var(--success);
+      color: white;
+    }
+
+    .timeline-label {
+      font-size: 12px;
+      color: #6c757d;
+      font-weight: 600;
+    }
+
+    .ticket-info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin: 20px 0;
+    }
+
+    .info-item {
+      padding: 15px;
+      background: var(--light);
+      border-radius: 8px;
+    }
+
+    .info-label {
+      font-size: 12px;
+      color: #6c757d;
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+
+    .info-value {
+      font-size: 16px;
+      color: var(--dark);
+      font-weight: 500;
+    }
+
+    .description-box {
+      margin: 20px 0;
+      padding: 20px;
+      background: var(--light);
+      border-radius: 8px;
+    }
+
+    .comments-section {
+      margin-top: 30px;
+    }
+
+    .comment {
+      padding: 15px;
+      background: white;
+      border-left: 4px solid var(--primary);
+      margin-bottom: 15px;
+      border-radius: 4px;
+    }
+
+    .comment-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 12px;
+      color: #6c757d;
+    }
+  </style>
+</head>
+<body>
+  <a href="/" class="back-link">← Voltar</a>
+  <div class="hero" style="text-align: center; color: white; padding: 30px 20px; margin-bottom: 20px;">
+    <h1>🔍 Acompanhar Chamado</h1>
+    <p>Consulte o status do seu chamado</p>
+  </div>
+
+  <div class="track-container">
+    <div class="search-box">
+      <h2>Buscar Chamado</h2>
+      <form id="searchForm" class="search-form" style="max-width: 500px; margin: 0 auto;">
+        <div class="form-group">
+          <label>Número do Chamado</label>
+          <input type="text" id="ticketNumber" class="form-control" placeholder="#TI123456789">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">🔍 Buscar</button>
+      </form>
+    </div>
+
+    <div id="resultContainer"></div>
+  </div>
+
+  <div style="position: fixed; right: 12px; bottom: 10px; font-size: 12px; opacity: 0.6;">
+    <a href="/" style="color: #ffffff; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px; text-decoration: none; margin-right: 8px;">
+      Abrir Chamado
+    </a>
+    <a href="/login.html" style="color: #ffffff; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px; text-decoration: none;">
+      Área do TI
+    </a>
+  </div>
+
+  <script src="/js/utils.js"></script>
+  <script src="/js/track.js"></script>
+</body>
+</html>

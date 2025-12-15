@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatórios - Sistema TI</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/dark-mode.css">
+  <style>
+    .reports-container { padding: 20px; }
+    .filters-panel { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+    .filters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
+    .filter-group { display: flex; flex-direction: column; }
+    .filter-group label { font-weight: 600; margin-bottom: 5px; color: #374151; }
+    .filter-group input, .filter-group select { padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; }
+    .filter-group input:focus, .filter-group select:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+    .filter-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn-filter { padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+    .btn-filter:hover { background: #2563eb; }
+    .btn-reset { padding: 10px 20px; background: #6b7280; color: white; border: none; border-radius: 6px; cursor: pointer; }
+    .btn-reset:hover { background: #4b5563; }
+    .btn-export { padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; }
+    .btn-export:hover { background: #059669; }
+    .stats-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .stat-box { background: white; padding: 15px; border-radius: 8px; border-left: 4px solid #3b82f6; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .stat-box h4 { margin: 0 0 10px 0; color: #6b7280; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+    .stat-box .value { font-size: 28px; font-weight: 700; color: #111827; }
+    .table-container { overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .table-container table { width: 100%; border-collapse: collapse; }
+    .table-container th { background: #f3f4f6; padding: 12px; text-align: left; font-weight: 600; color: #374151; font-size: 13px; }
+    .table-container td { padding: 12px; border-bottom: 1px solid #e5e7eb; }
+    .table-container tr:hover { background: #f9fafb; }
+    .table-container tbody tr { cursor: pointer; }
+    .badge-status { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    .badge-aberto { background: #fee2e2; color: #b91c1c; }
+    .badge-em_andamento { background: #fef3c7; color: #b45309; }
+    .badge-resolvido { background: #dcfce7; color: #166534; }
+    .badge-fechado { background: #e0e7ff; color: #3730a3; }
+    .badge-urgente { background: #fee2e2; color: #b91c1c; }
+    .badge-alta { background: #ffedd5; color: #9a3412; }
+    .badge-media { background: #fef08a; color: #92400e; }
+    .badge-baixa { background: #dcfce7; color: #166534; }
+    .loading { text-align: center; padding: 40px; color: #6b7280; }
+    .spinner { border: 3px solid #e5e7eb; border-top: 3px solid #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .pagination { display: flex; gap: 5px; justify-content: center; margin-top: 20px; padding: 20px; }
+    .pagination button { padding: 8px 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 4px; }
+    .pagination button.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+    .records-info { text-align: center; color: #6b7280; margin-top: 10px; font-size: 14px; }
+    /* Histórico - Busca e visualização */
+    .history-panel { background: #f8f9fa; padding: 16px; border-radius: 8px; margin: 12px 0 20px; }
+    .history-search { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .history-search input { padding:10px; border:1px solid #d1d5db; border-radius:6px; min-width:240px; }
+    .history-search button { padding:10px 16px; border:none; border-radius:6px; background:#3b82f6; color:#fff; font-weight:600; cursor:pointer; }
+    .history-search button:hover { background:#2563eb; }
+    .history-container { display:none; background:#fff; border-radius:8px; padding:16px; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-top:12px; }
+    .ticket-header { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e5e7eb; padding-bottom:10px; margin-bottom:12px; }
+    .ticket-title { font-size:18px; font-weight:700; color:#111827; }
+    .ticket-meta { color:#6b7280; font-size:13px; }
+    .timeline { display:flex; flex-direction:column; gap:10px; }
+    .timeline-item { display:flex; gap:12px; align-items:flex-start; padding:10px; border:1px solid #e5e7eb; border-radius:8px; }
+    .timeline-badge { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; }
+    .badge-statuschg { background:#e0e7ff; color:#3730a3; }
+    .badge-comment { background:#dcfce7; color:#166534; }
+    .timeline-content { flex:1; }
+    .timeline-header { font-weight:600; color:#374151; margin-bottom:4px; }
+    .timeline-time { color:#6b7280; font-size:12px; }
+    /* Resultados da busca por atendimento */
+    .search-results { display:none; background:#fff; border:1px solid #e5e7eb; border-radius:8px; margin-top:12px; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+    .search-results-header { padding:10px 12px; border-bottom:1px solid #e5e7eb; font-weight:600; color:#374151; }
+    .search-results table { width:100%; border-collapse:collapse; }
+    .search-results th, .search-results td { padding:10px 12px; border-bottom:1px solid #f3f4f6; text-align:left; }
+    .search-results th { background:#f9fafb; color:#374151; font-size:13px; }
+    .search-results tr:hover { background:#f9fafb; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <span>🎫</span>
+          <span>Sistema TI</span>
+        </div>
+      </div>
+
+      <div class="sidebar-user" id="sidebarUser">
+        <div class="sidebar-user-name" id="userName">Carregando...</div>
+        <div class="sidebar-user-role" id="userRole"></div>
+      </div>
+
+      <nav>
+        <ul class="sidebar-nav">
+          <li class="sidebar-nav-item">
+            <a href="/dashboard.html" class="sidebar-nav-link">
+              <span class="sidebar-nav-icon">📋</span>
+              <span>Chamados</span>
+            </a>
+          </li>
+          <li class="sidebar-nav-item">
+            <a href="/metrics.html" class="sidebar-nav-link">
+              <span class="sidebar-nav-icon">📊</span>
+              <span>Métricas</span>
+            </a>
+          </li>
+          <li class="sidebar-nav-item">
+            <a href="/reports.html" class="sidebar-nav-link active">
+              <span class="sidebar-nav-icon">📈</span>
+              <span>Relatórios</span>
+            </a>
+          </li>
+          <li class="sidebar-nav-item" id="tvNav">
+            <a href="/tv.html" class="sidebar-nav-link">
+              <span class="sidebar-nav-icon">📺</span>
+              <span>Painel TV</span>
+            </a>
+          </li>
+          <li class="sidebar-nav-item" id="templatesNav">
+            <a href="#" class="sidebar-nav-link" onclick="openTemplatesModal(event)">
+              <span class="sidebar-nav-icon">📝</span>
+              <span>Respostas Rápidas</span>
+            </a>
+          </li>
+          <li class="sidebar-nav-item" id="usersNav">
+            <a href="/users.html" class="sidebar-nav-link">
+              <span class="sidebar-nav-icon">👥</span>
+              <span>Usuários</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="btn btn-danger btn-block btn-sm" onclick="logout()">
+          🚪 Sair
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="dashboard-header">
+        <h1 class="dashboard-title">📈 Relatórios e Histórico</h1>
+        <div class="dashboard-actions">
+          <button class="btn btn-secondary btn-sm" onclick="toggleDarkMode()" title="Alternar tema">
+            <span id="themeIcon">🌙</span>
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="location.reload()">
+            🔄 Atualizar
+          </button>
+        </div>
+      </div>
+
+      <div class="reports-container">
+        <!-- Painel de Filtros -->
+        <div class="filters-panel">
+          <h3 style="margin-top: 0;">🔍 Filtros Avançados</h3>
+          
+          <div class="filters-grid">
+            <div class="filter-group">
+              <label>📅 Data Inicial</label>
+              <input type="date" id="startDate">
+            </div>
+            <div class="filter-group">
+              <label>📅 Data Final</label>
+              <input type="date" id="endDate">
+            </div>
+            <div class="filter-group">
+              <label>📌 Status</label>
+              <select id="statusFilter">
+                <option value="">Todos</option>
+                <option value="aberto">Aberto</option>
+                <option value="em_andamento">Em Andamento</option>
+                <option value="resolvido">Resolvido</option>
+                <option value="fechado">Fechado</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>⚡ Prioridade</label>
+              <select id="priorityFilter">
+                <option value="">Todas</option>
+                <option value="urgente">Urgente</option>
+                <option value="alta">Alta</option>
+                <option value="media">Média</option>
+                <option value="baixa">Baixa</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>🏷️ Categoria</label>
+              <select id="categoryFilter">
+                <option value="">Todas</option>
+                <option value="Software">Software</option>
+                <option value="Hardware">Hardware</option>
+                <option value="Rede">Rede</option>
+                <option value="Email">Email</option>
+                <option value="Acesso">Acesso</option>
+                <option value="Instalacao">Instalação</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>👤 Técnico Atribuído</label>
+              <select id="technicianFilter">
+                <option value="">Todos</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>🏢 Departamento</label>
+              <input type="text" id="departmentFilter" placeholder="Ex: TI, Financeiro...">
+            </div>
+          </div>
+
+          <div class="filter-actions">
+            <button class="btn-filter" onclick="applyFilters()">🔎 Buscar</button>
+            <button class="btn-reset" onclick="resetFilters()">🔄 Limpar Filtros</button>
+            <button class="btn-export" onclick="exportToCSV()">📥 Exportar CSV</button>
+          </div>
+        </div>
+
+        <!-- Buscar Atendimento / Histórico -->
+        <div class="history-panel">
+          <h3 style="margin:0 0 10px 0;">🕘 Buscar Atendimento (Histórico)</h3>
+          <div class="history-search">
+            <input id="ticketSearch" placeholder="Número, nome, telefone ou setor" />
+            <button onclick="searchTicketHistory()">Buscar Atendimento</button>
+          </div>
+          <div id="historyContainer" class="history-container">
+            <div class="ticket-header">
+              <div>
+                <div id="ticketTitle" class="ticket-title"></div>
+                <div id="ticketMeta" class="ticket-meta"></div>
+              </div>
+              <div id="ticketStatusBadge"></div>
+            </div>
+            <div id="timeline" class="timeline"></div>
+          </div>
+          <div id="searchResults" class="search-results"></div>
+        </div>
+
+        <!-- Estatísticas do Período -->
+        <div class="stats-summary" id="statsSummary" style="display: none;">
+          <div class="stat-box">
+            <h4>Total</h4>
+            <div class="value" id="stat-total">0</div>
+          </div>
+          <div class="stat-box" style="border-left-color: #ef4444;">
+            <h4>Abertos</h4>
+            <div class="value" id="stat-abertos">0</div>
+          </div>
+          <div class="stat-box" style="border-left-color: #f59e0b;">
+            <h4>Em Andamento</h4>
+            <div class="value" id="stat-andamento">0</div>
+          </div>
+          <div class="stat-box" style="border-left-color: #10b981;">
+            <h4>Resolvidos</h4>
+            <div class="value" id="stat-resolvidos">0</div>
+          </div>
+          <div class="stat-box" style="border-left-color: #6b7280;">
+            <h4>Fechados</h4>
+            <div class="value" id="stat-fechados">0</div>
+          </div>
+          <div class="stat-box" style="border-left-color: #8b5cf6;">
+            <h4>Tempo Médio (h)</h4>
+            <div class="value" id="stat-avgtime">0</div>
+          </div>
+        </div>
+
+        <!-- Tabela de Resultados -->
+        <div id="resultsContainer" style="display: none;">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Solicitante</th>
+                  <th>Assunto</th>
+                  <th>Categoria</th>
+                  <th>Prioridade</th>
+                  <th>Status</th>
+                  <th>Técnico</th>
+                  <th>Criado em</th>
+                  <th>Resolvido em</th>
+                  <th>Horas</th>
+                </tr>
+              </thead>
+              <tbody id="resultsTable">
+              </tbody>
+            </table>
+          </div>
+          <div class="records-info" id="recordsInfo"></div>
+          <div class="pagination" id="pagination"></div>
+        </div>
+
+        <!-- Estado de Carregamento -->
+        <div id="loadingState" style="display: none;">
+          <div class="loading">
+            <div class="spinner"></div>
+            <p>Carregando dados...</p>
+          </div>
+        </div>
+
+        <!-- Estado Vazio -->
+        <div id="emptyState" style="text-align: center; padding: 40px; color: #6b7280;">
+          <p>👉 Selecione filtros e clique em "Buscar" para visualizar resultados</p>
+        </div>
+
+      </div>
+    </main>
+  </div>
+  <script src="/js/dashboard.js"></script>
+  <script src="/js/templates.js"></script>
+  <script>
+    const PAGE_SIZE = 50;
+    let currentPage = 1;
+    let allResults = [];
+    let currentStats = null;
+    // Histórico
+    let lastSearchedTicket = null;
+
+    // Carregar técnicos na lista
+    async function loadTechnicians() {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/users/technicians', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        
+        if (data.success && (data.technicians || data.users)) {
+          const select = document.getElementById('technicianFilter');
+          const list = data.technicians || data.users;
+          list.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user.id;
+            option.textContent = user.name;
+            select.appendChild(option);
+          });
+        }
+      } catch (e) {
+        console.error('Erro ao carregar técnicos:', e);
+      }
+    }
+
+    // Aplicar filtros e buscar dados
+    async function applyFilters() {
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      const status = document.getElementById('statusFilter').value;
+      const priority = document.getElementById('priorityFilter').value;
+      const category = document.getElementById('categoryFilter').value;
+      const technician = document.getElementById('technicianFilter').value;
+      const department = document.getElementById('departmentFilter').value;
+
+      const params = new URLSearchParams();
+      if (startDate) params.append('start_date', startDate);
+      if (endDate) params.append('end_date', endDate);
+      if (status) params.append('status', status);
+      if (priority) params.append('priority', priority);
+      if (category) params.append('category', category);
+      if (technician) params.append('technician', technician);
+      if (department) params.append('department', department);
+      params.append('limit', 10000);
+
+      document.getElementById('emptyState').style.display = 'none';
+      document.getElementById('resultsContainer').style.display = 'none';
+      document.getElementById('loadingState').style.display = 'block';
+      document.getElementById('statsSummary').style.display = 'none';
+
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`/api/metrics/history?${params}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+
+        if (data.success) {
+          allResults = data.tickets || [];
+          currentStats = data.stats || {};
+          currentPage = 1;
+          renderResults();
+          updateStats();
+        } else {
+          alert('Erro ao carregar dados: ' + data.message);
+        }
+      } catch (e) {
+        console.error('Erro:', e);
+        alert('Erro ao carregar dados');
+      } finally {
+        document.getElementById('loadingState').style.display = 'none';
+      }
+    }
+
+    function renderResults() {
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const end = start + PAGE_SIZE;
+      const pageResults = allResults.slice(start, end);
+
+      const tbody = document.getElementById('resultsTable');
+      tbody.innerHTML = '';
+
+      pageResults.forEach(t => {
+        const row = `
+          <tr onclick="loadTicketHistoryById(${t.id})">
+            <td><strong>#${t.ticket_number}</strong></td>
+            <td>${t.requester_name || '—'}</td>
+            <td>${t.subject || '—'}</td>
+            <td>${t.category || '—'}</td>
+            <td><span class="badge-status badge-${t.priority || 'baixa'}">${(t.priority || 'BAIXA').toUpperCase()}</span></td>
+            <td><span class="badge-status badge-${t.status || 'aberto'}">${t.status === 'em_andamento' ? 'EM ANDAMENTO' : (t.status || 'ABERTO').toUpperCase()}</span></td>
+            <td>${t.assigned_to_name || '—'}</td>
+            <td>${new Date(t.created_at).toLocaleDateString('pt-BR')}</td>
+            <td>${t.resolved_at ? new Date(t.resolved_at).toLocaleDateString('pt-BR') : '—'}</td>
+            <td>${t.hours_to_resolve || '—'}</td>
+          </tr>
+        `;
+        tbody.innerHTML += row;
+      });
+
+      if (pageResults.length === 0 && allResults.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 40px;">Nenhum resultado encontrado</td></tr>';
+      }
+
+      updatePagination();
+      document.getElementById('resultsContainer').style.display = 'block';
+      document.getElementById('recordsInfo').textContent = `Mostrando ${start + 1} a ${Math.min(end, allResults.length)} de ${allResults.length} registros`;
+    }
+
+    function updatePagination() {
+      const totalPages = Math.ceil(allResults.length / PAGE_SIZE);
+      const pagination = document.getElementById('pagination');
+      pagination.innerHTML = '';
+
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        btn.className = i === currentPage ? 'active' : '';
+        btn.onclick = () => { currentPage = i; renderResults(); window.scrollTo(0, 0); };
+        pagination.appendChild(btn);
+      }
+    }
+
+    function updateStats() {
+      if (!currentStats) return;
+      document.getElementById('stat-total').textContent = currentStats.total || 0;
+      document.getElementById('stat-abertos').textContent = currentStats.abertos || 0;
+      document.getElementById('stat-andamento').textContent = currentStats.em_andamento || 0;
+      document.getElementById('stat-resolvidos').textContent = currentStats.resolvidos || 0;
+      document.getElementById('stat-fechados').textContent = currentStats.fechados || 0;
+      document.getElementById('stat-avgtime').textContent = (currentStats.avg_resolution_hours || 0).toFixed(1);
+      document.getElementById('statsSummary').style.display = 'grid';
+    }
+
+    function resetFilters() {
+      document.getElementById('startDate').value = '';
+      document.getElementById('endDate').value = '';
+      document.getElementById('statusFilter').value = '';
+      document.getElementById('priorityFilter').value = '';
+      document.getElementById('categoryFilter').value = '';
+      document.getElementById('technicianFilter').value = '';
+      document.getElementById('departmentFilter').value = '';
+      
+      allResults = [];
+      currentStats = null;
+      currentPage = 1;
+      
+      document.getElementById('emptyState').style.display = 'block';
+      document.getElementById('resultsContainer').style.display = 'none';
+      document.getElementById('statsSummary').style.display = 'none';
+      document.getElementById('loadingState').style.display = 'none';
+    }
+
+    function exportToCSV() {
+      if (allResults.length === 0) {
+        alert('Nenhum dado para exportar');
+        return;
+      }
+
+      let csv = 'Ticket,Solicitante,Email,Telefone,Assunto,Categoria,Prioridade,Status,Técnico,Departamento,Criado em,Resolvido em,Horas para Resolver\n';
+      
+      allResults.forEach(t => {
+        csv += `"#${t.ticket_number}","${t.requester_name || ''}","${t.requester_email || ''}","${t.requester_phone || ''}","${t.subject || ''}","${t.category || ''}","${t.priority || ''}","${t.status || ''}","${t.assigned_to_name || ''}","${t.department || ''}","${new Date(t.created_at).toLocaleDateString('pt-BR')}","${t.resolved_at ? new Date(t.resolved_at).toLocaleDateString('pt-BR') : ''}","${t.hours_to_resolve || ''}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `relatorio_${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+    }
+
+    // Buscar atendimento e renderizar histórico
+    async function searchTicketHistory(){
+      const term = (document.getElementById('ticketSearch').value || '').trim();
+      if (!term) { alert('Informe o número do chamado.'); return; }
+      try {
+        const token = localStorage.getItem('token');
+        const listRes = await fetch(`/api/tickets?search=${encodeURIComponent(term)}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const listData = await listRes.json();
+        if (!listData.success || !listData.tickets?.length) {
+          document.getElementById('historyContainer').style.display = 'none';
+          document.getElementById('searchResults').style.display = 'none';
+          alert('Chamado não encontrado.');
+          return;
+        }
+        // Preferir match exato pelo número
+        const exact = listData.tickets.find(t => String(t.ticket_number).toLowerCase() === term.toLowerCase());
+        if (exact){
+          await loadTicketHistoryById(exact.id);
+          return;
+        }
+        if (listData.tickets.length === 1){
+          await loadTicketHistoryById(listData.tickets[0].id);
+          return;
+        }
+        renderSearchResults(listData.tickets);
+      } catch(err){
+        console.error(err);
+        alert('Erro ao buscar atendimento.');
+      }
+    }
+
+    async function loadTicketHistoryById(id){
+      try{
+        const token = localStorage.getItem('token');
+        const detailRes = await fetch(`/api/tickets/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const detail = await detailRes.json();
+        if (!detail.success) { alert('Falha ao obter detalhes do chamado.'); return; }
+        renderHistory(detail.ticket, detail.comments||[], detail.history||[]);
+        const sr = document.getElementById('searchResults');
+        if (sr){ sr.style.display = 'none'; sr.innerHTML = ''; }
+        // Scrollar até o histórico para foco
+        const hc = document.getElementById('historyContainer');
+        if (hc) hc.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch(e){
+        console.error(e);
+        alert('Erro ao carregar histórico.');
+      }
+    }
+
+    function renderSearchResults(tickets){
+      const el = document.getElementById('searchResults');
+      if (!el) return;
+      const rows = tickets.map(t => `
+        <tr onclick="loadTicketHistoryById(${t.id})">
+          <td><strong>#${t.ticket_number}</strong></td>
+          <td>${escapeHTML(t.requester_name||'—')}</td>
+          <td>${escapeHTML((t.subject||'—').slice(0,80))}</td>
+          <td>${escapeHTML(t.department||'—')}</td>
+          <td>${t.status==='em_andamento'?'EM ANDAMENTO':(t.status||'').toUpperCase()}</td>
+          <td>${new Date(t.created_at).toLocaleString('pt-BR')}</td>
+        </tr>
+      `).join('');
+      el.innerHTML = `
+        <div class="search-results-header">Foram encontrados ${tickets.length} atendimentos. Clique para ver o histórico.</div>
+        <table>
+          <thead>
+            <tr><th>Ticket</th><th>Solicitante</th><th>Assunto</th><th>Setor</th><th>Status</th><th>Criado</th></tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+      el.style.display = 'block';
+      document.getElementById('historyContainer').style.display = 'none';
+    }
+
+    function renderHistory(ticket, comments, history){
+      // Cabeçalho
+      document.getElementById('ticketTitle').textContent = `#${ticket.ticket_number} — ${ticket.subject || ''}`;
+      const meta = [
+        ticket.requester_name ? `Solicitante: ${ticket.requester_name}` : null,
+        ticket.requester_email ? `Email: ${ticket.requester_email}` : null,
+        ticket.department ? `Depto: ${ticket.department}` : null,
+        ticket.assigned_name ? `Técnico: ${ticket.assigned_name}` : null
+      ].filter(Boolean).join(' • ');
+      document.getElementById('ticketMeta').textContent = meta;
+      document.getElementById('ticketStatusBadge').innerHTML = `<span class="badge-status badge-${ticket.status}">${ticket.status === 'em_andamento' ? 'EM ANDAMENTO' : (ticket.status||'').toUpperCase()}</span>`;
+
+      // Unificar timeline (status + comentários)
+      const items = [];
+      (history||[]).forEach(h => items.push({
+        type: 'status',
+        time: h.created_at,
+        title: `Status: ${h.old_status || '—'} → ${h.new_status || '—'}`,
+        user: h.user_name || '—',
+        text: ''
+      }));
+      (comments||[]).forEach(c => items.push({
+        type: 'comment',
+        time: c.created_at,
+        title: `Comentário de ${c.user_name || '—'} ${c.is_internal ? '(interno)' : ''}`,
+        user: c.user_name || '—',
+        text: c.comment || ''
+      }));
+      items.sort((a,b)=> new Date(a.time) - new Date(b.time));
+
+      const timeline = document.getElementById('timeline');
+      timeline.innerHTML = items.map(it => `
+        <div class="timeline-item">
+          <div class="timeline-badge ${it.type==='status' ? 'badge-statuschg' : 'badge-comment'}">${it.type==='status' ? '🔁' : '💬'}</div>
+          <div class="timeline-content">
+            <div class="timeline-header">${it.title}</div>
+            ${it.text ? `<div>${escapeHTML(it.text)}</div>` : ''}
+            <div class="timeline-time">${new Date(it.time).toLocaleString('pt-BR')}</div>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('historyContainer').style.display = 'block';
+    }
+
+    function escapeHTML(str){
+      return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s]));
+    }
+
+    // Enter para buscar histórico
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const inp = document.getElementById('ticketSearch');
+      if (inp) inp.addEventListener('keydown', (e)=>{ if (e.key==='Enter') searchTicketHistory(); });
+    });
+
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', ()=>{ loadTechnicians(); });
+  </script>
+</body>
+</html>

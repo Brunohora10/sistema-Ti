@@ -1,0 +1,35 @@
+# Dependências
+node_modules/
+package-lock.json
+
+# Variáveis de Ambiente
+.env
+.env.local
+.env.*.local
+
+# Banco de Dados e Backups
+database/
+backups/
+*.db
+*.db-journal
+*.sqlite
+*.sqlite-journal
+
+# Uploads
+uploads/*
+!uploads/.gitkeep
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-error.log*
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporários
+tmp/
+temp/

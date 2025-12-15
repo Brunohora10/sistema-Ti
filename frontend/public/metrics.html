@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Métricas - Sistema TI</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/dark-mode.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <span>🎫</span>
+          <span>Sistema TI</span>
+        </div>
+      </div>
+
+      <div class="sidebar-user" id="sidebarUser">
+        <div class="sidebar-user-name" id="userName">Carregando...</div>
+        <div class="sidebar-user-role" id="userRole"></div>
+      </div>
+
+      <nav>
+        <ul class="sidebar-nav">
+          <li class="sidebar-nav-item">
+            <a href="/dashboard.html" class="sidebar-nav-link">
+              <span class="sidebar-nav-icon">📋</span>
+              <span>Chamados</span>
+            </a>
+          </li>
+          <li class="sidebar-nav-item">
+            <a href="/metrics.html" class="sidebar-nav-link active">
+              <span class="sidebar-nav-icon">📊</span>
+              <span>Métricas</span>
+            </a>
+          </li>
+          <li class="sidebar-nav-item" id="reportsNav">
+            <a href="/reports.html" class="sidebar-nav-link">
+              <span class="sidebar-nav-icon">📈</span>
+              <span>Relatórios</span>
+            </a>
+          </li>
+          <li class="sidebar-nav-item" id="tvNav">
+            <a href="/tv.html" class="sidebar-nav-link">
+              <span class="sidebar-nav-icon">📺</span>
+              <span>Painel TV</span>
+            </a>
+          </li>
+          <li class="sidebar-nav-item" id="usersNav">
+            <a href="/users.html" class="sidebar-nav-link">
+              <span class="sidebar-nav-icon">👥</span>
+              <span>Usuários</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="btn btn-danger btn-block btn-sm" onclick="logout()">
+          🚪 Sair
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="dashboard-header">
+        <h1 class="dashboard-title">📊 Métricas do Sistema</h1>
+        <div class="dashboard-actions">          <button class="btn btn-secondary btn-sm" onclick="toggleDarkMode()" title="Alternar tema">
+            <span id="themeIcon">🌙</span>
+          </button>          <button class="btn btn-secondary btn-sm" onclick="loadMetrics()">
+            🔄 Atualizar
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon primary">📋</div>
+          <div class="stat-info">
+            <div class="stat-label">Total de Chamados</div>
+            <div class="stat-value" id="totalTickets">0</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon warning">⏳</div>
+          <div class="stat-info">
+            <div class="stat-label">Abertos</div>
+            <div class="stat-value" id="openTickets">0</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon primary">🔧</div>
+          <div class="stat-info">
+            <div class="stat-label">Em Andamento</div>
+            <div class="stat-value" id="inProgressTickets">0</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon success">✅</div>
+          <div class="stat-info">
+            <div class="stat-label">Resolvidos</div>
+            <div class="stat-value" id="resolvedTickets">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Métricas Detalhadas -->
+      <div class="filters">
+        <div class="card" style="padding: 20px; margin-bottom: 20px;">
+          <h3 style="margin-bottom: 15px;">📈 Estatísticas por Categoria</h3>
+          <div id="categoryStats" style="min-height: 100px;">Carregando...</div>
+        </div>
+
+        <div class="card" style="padding: 20px; margin-bottom: 20px;">
+          <h3 style="margin-bottom: 15px;">⏱️ Tempo Médio de Resolução</h3>
+          <div id="avgResolutionTime" style="font-size: 24px; font-weight: bold; color: var(--primary);">
+            Carregando...
+          </div>
+        </div>
+
+        <div class="card" style="padding: 20px;">
+          <h3 style="margin-bottom: 15px;">👥 Desempenho por Técnico</h3>
+          <div id="technicianStats" style="min-height: 100px;">Carregando...</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/utils.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/metrics.js"></script>
+</body>
+</html>

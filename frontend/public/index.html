@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abrir Chamado - Sistema TI</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .hero {
+      text-align: center;
+      color: white;
+      padding: 40px 20px;
+      margin-bottom: 30px;
+    }
+    
+    .hero h1 {
+      font-size: 42px;
+      margin-bottom: 15px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .hero p {
+      font-size: 18px;
+      opacity: 0.95;
+    }
+    
+    .success-message {
+      text-align: center;
+      padding: 40px;
+    }
+    
+    .success-icon {
+      font-size: 80px;
+      color: var(--success);
+      margin-bottom: 20px;
+    }
+    
+    .ticket-code {
+      font-size: 32px;
+      font-weight: bold;
+      color: var(--primary);
+      margin: 20px 0;
+      padding: 20px;
+      background: rgba(102, 126, 234, 0.1);
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <h1>🎫 Sistema de Chamados TI</h1>
+    <p>Precisa de suporte? Abra um chamado e nossa equipe irá ajudá-lo!</p>
+    <div style="margin-top: 15px;">
+      <a href="/track.html" class="btn btn-secondary" style="display: inline-block; padding: 10px 20px; text-decoration: none;">
+        🔍 Acompanhar Meu Chamado
+      </a>
+      <a href="/public-dashboard.html" class="btn btn-secondary" style="display: inline-block; padding: 10px 20px; text-decoration: none; margin-left: 10px;">
+        📊 Dashboard Público
+      </a>
+        <a href="/tv.html" class="btn btn-secondary" style="display: inline-block; padding: 10px 20px; text-decoration: none; margin-left: 10px;">
+          📺 Painel TV
+        </a>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Formulário de Abertura de Chamado -->
+    <div class="card" id="ticketForm">
+      <div class="card-header">
+        <h2>Abrir Novo Chamado</h2>
+      </div>
+
+      <div id="alertContainer"></div>
+
+      <form id="newTicketForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="requester_name">
+              Seu Nome <span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="requester_name" 
+              name="requester_name" 
+              class="form-control" 
+              required
+              placeholder="Digite seu nome completo"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="requester_email">
+              Seu Email <span class="required">*</span>
+            </label>
+            <input 
+              type="email" 
+              id="requester_email" 
+              name="requester_email" 
+              class="form-control" 
+              required
+              placeholder="seu.email@empresa.com"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="requester_phone">
+              Seu Telefone/WhatsApp <span class="required">*</span>
+            </label>
+            <input 
+              type="tel" 
+              id="requester_phone" 
+              name="requester_phone" 
+              class="form-control"
+              required
+              placeholder="(DDD) 90000-0000"
+              maxlength="15"
+            >
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="department">
+              Setor / Local <span class="required">*</span>
+            </label>
+            <!-- Campo livre para qualquer setor/local -->
+            <input
+              type="text"
+              id="department"
+              name="department"
+              class="form-control"
+              required
+              placeholder="Digite o nome do departamento ou local"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="category">
+              Categoria <span class="required">*</span>
+            </label>
+            <select id="category" name="category" class="form-control" required>
+              <option value="">Selecione...</option>
+              <option value="Hardware">Hardware (Computador, Impressora, etc)</option>
+              <option value="Software">Software (Programas, Sistemas)</option>
+              <option value="Rede">Rede / Internet</option>
+              <option value="Email">Email</option>
+              <option value="Telefonia">Telefonia</option>
+              <option value="Acesso">Acesso / Senha</option>
+              <option value="Instalacao">Instalação / Configuração</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="priority">
+              Prioridade <span class="required">*</span>
+            </label>
+            <select id="priority" name="priority" class="form-control" required>
+              <option value="">Selecione...</option>
+              <option value="baixa">🟢 Baixa - Pode esperar</option>
+              <option value="media">🟡 Média - Importante</option>
+              <option value="alta">🟠 Alta - Urgente</option>
+              <option value="urgente">🔴 Urgente - Sistema parado</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="description">
+            Descreva o Problema <span class="required">*</span>
+          </label>
+          <textarea 
+            id="description" 
+            name="description" 
+            class="form-control" 
+            required
+            placeholder="Descreva o problema com o máximo de detalhes possível. Quanto mais informações, mais rápido conseguiremos ajudar!"
+            rows="8"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="attachment">
+            Anexar Arquivo (Opcional)
+          </label>
+          <input 
+            type="file" 
+            id="attachment" 
+            name="attachment" 
+            class="form-control"
+            accept=".jpg,.jpeg,.png,.gif,.mp4,.mov,.avi,.mkv,.pdf,.doc,.docx,.txt"
+          >
+          <small style="color: #6c757d; font-size: 12px; margin-top: 5px; display: block;">
+            Formatos aceitos: Imagens (JPG, PNG, GIF), Vídeos (MP4, MOV, AVI, MKV), Documentos (PDF, DOC, TXT) — máx. 5MB
+          </small>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg btn-block" id="submitBtn">
+          <span id="btnText">📤 Enviar Chamado</span>
+          <span id="btnLoading" class="hidden">
+            <span class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></span>
+            Enviando...
+          </span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Mensagem de Sucesso (oculta inicialmente) -->
+    <div class="card hidden" id="successMessage">
+      <div class="success-message">
+        <div class="success-icon">✅</div>
+        <h2>Chamado Criado com Sucesso!</h2>
+        <p>Seu chamado foi registrado e nossa equipe já foi notificada.</p>
+        
+        <div class="ticket-code">
+          #<span id="ticketNumber"></span>
+        </div>
+        
+        <p style="color: #6c757d; margin-bottom: 20px;">
+          Guarde este número para acompanhamento.<br>
+          Você receberá atualizações por email.
+        </p>
+
+        <div id="techList" class="card" style="padding:16px; text-align:left; max-width:720px; margin:0 auto 20px auto; display:none;">
+          <h3 style="margin-top:0;">Equipe de TI para contato</h3>
+          <div id="techListContent">Carregando técnicos...</div>
+        </div>
+        
+        <button class="btn btn-primary" onclick="location.reload()">
+          Abrir Novo Chamado
+        </button>
+        
+        <a href="/login.html" class="btn btn-outline" style="margin-left: 10px;">
+          Área do TI
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/user-portal.js"></script>
+  <!-- Link discreto para técnicos (login) -->
+  <div style="position: fixed; right: 12px; bottom: 10px; font-size: 12px; opacity: 0.6;">
+    <a href="/login.html" style="color: #ffffff; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px; text-decoration: none;">
+      Área do TI
+    </a>
+  </div>
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TV - Status de Chamados</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    :root { --tv-bg: #0f172a; --tv-card: #111827; --tv-accent: #60a5fa; }
+    body { background: var(--tv-bg); color: #e5e7eb; font-family: Segoe UI, sans-serif; }
+    .tv-container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+    .tv-header { display:flex; align-items:center; justify-content:space-between; margin-bottom: 16px; }
+    .tv-title { font-size: 28px; font-weight: 700; letter-spacing: .5px; }
+    .tv-time { opacity:.7; font-size:14px; }
+    .grid { display:grid; grid-template-columns: 1.2fr .8fr; gap: 16px; }
+    .cards { display:grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+    .card { background: var(--tv-card); border-radius: 12px; padding: 16px; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+    .card h4 { margin:0 0 8px 0; font-size: 13px; text-transform: uppercase; opacity:.8; }
+    .card .num { font-size: 34px; font-weight: 800; color: var(--tv-accent); }
+    .panel { background: var(--tv-card); border-radius: 12px; padding: 16px; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+    .panel h3 { margin:0 0 12px 0; font-size: 18px; }
+    .list { display:flex; flex-direction: column; gap: 8px; max-height: 62vh; overflow: auto; }
+    .item { display:flex; justify-content: space-between; align-items: center; background:#0b1220; border:1px solid #1f2937; padding:10px 12px; border-radius:10px; }
+    .item.flash { animation: glow 1.4s ease-out 1; outline: 2px solid #60a5fa; }
+    @keyframes glow { 0% { outline-color:#93c5fd; background:#0b1220; } 60% { outline-color:#60a5fa; background:#102036; } 100% { outline-color:transparent; background:#0b1220; } }
+    .item .left { display:flex; flex-direction:column; gap:4px; }
+    .badge { padding:4px 8px; border-radius: 999px; font-weight:700; font-size: 12px; }
+    .b-open { background:#fee2e2; color:#ef4444; }
+    .b-prog { background:#fef3c7; color:#d97706; }
+    .b-done { background:#dcfce7; color:#16a34a; }
+    .prio { font-size:12px; padding:4px 8px; border-radius:8px; margin-left:8px; }
+    .p-urgente{ background:#7f1d1d; color:#fecaca }
+    .p-alta{ background:#7c2d12; color:#ffedd5 }
+    .p-media{ background:#1f2937; color:#fde68a }
+    .p-baixa{ background:#052e16; color:#bbf7d0 }
+    canvas { width:100% !important; height:260px !important; }
+    .footer { text-align:center; opacity:.6; font-size: 12px; margin-top: 10px; }
+    @media (max-width: 1200px){ .grid{ grid-template-columns: 1fr; } .cards{ grid-template-columns: repeat(2,1fr);} }
+  </style>
+  <!-- Tema claro para maior destaque em TV -->
+  <style>
+    body { background: #f5f7fb; color: #111827; }
+    .tv-title { color: #0f172a; }
+    .card, .panel { background: #ffffff; border:1px solid #e5e7eb; box-shadow: 0 6px 18px rgba(0,0,0,.06); }
+    .card h4 { opacity: .7; }
+    .item { background:#f8fafc; border:1px solid #e5e7eb; }
+    .item.flash { animation: glow 1.4s ease-out 1; outline: 2px solid #60a5fa; }
+    @keyframes glow { 0% { outline-color:#93c5fd; background:#f8fafc; } 60% { outline-color:#60a5fa; background:#e7f0ff; } 100% { outline-color:transparent; background:#f8fafc; } }
+    .b-open { background:#fee2e2; color:#b91c1c; }
+    .b-prog { background:#fef3c7; color:#b45309; }
+    .b-done { background:#dcfce7; color:#166534; }
+    .p-urgente{ background:#fee2e2; color:#b91c1c }
+    .p-alta{ background:#ffedd5; color:#9a3412 }
+    .p-media{ background:#fef08a; color:#92400e }
+    .p-baixa{ background:#dcfce7; color:#166534 }
+    .footer { color:#111827; }
+
+    /* Overlay Novo Chamado */
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; align-items: center; justify-content: center; z-index: 9999; }
+    .overlay-content { background:#ffffff; padding: 40px 60px; border-radius: 16px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,.2); }
+    .overlay-title { font-size: 56px; font-weight: 800; color:#111827; margin-bottom: 10px; }
+    .overlay-number { font-size: 64px; font-weight: 900; color:#2563eb; letter-spacing: 1px; margin-bottom: 12px; }
+    .overlay-subject { font-size: 28px; color:#374151; margin-bottom: 12px; }
+    .overlay-meta { font-size: 22px; color:#6b7280; }
+  </style>
+</head>
+<body>
+  <div class="tv-container">
+    <div class="tv-header">
+      <div class="tv-title">📺 Painel TV — Sistema TI</div>
+      <div class="tv-time">🕒 <span id="clock">--:--:--</span> • Atualizado: <span id="lastUpdate">--:--</span></div>
+    </div>
+
+    <div class="cards">
+      <div class="card"><h4>Total</h4><div class="num" id="c-total">0</div></div>
+      <div class="card"><h4>Abertos</h4><div class="num" id="c-abertos">0</div></div>
+      <div class="card"><h4>Em Andamento</h4><div class="num" id="c-prog">0</div></div>
+      <div class="card"><h4>Resolvidos</h4><div class="num" id="c-res">0</div></div>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <h3>Fila / Em Andamento</h3>
+        <div class="list" id="list-main"></div>
+      </div>
+      <div class="panel">
+        <h3>Prioridades e Categorias</h3>
+        <canvas id="chartPriority"></canvas>
+        <canvas id="chartCategory" style="margin-top:14px;"></canvas>
+      </div>
+    </div>
+    <div class="footer">Atualiza automaticamente a cada 10s | Ideal para TV</div>
+  </div>
+
+  <!-- Overlay de Novo Chamado -->
+  <div id="newOverlay" class="overlay">
+    <div class="overlay-content">
+      <div class="overlay-title">Novo Chamado!</div>
+      <div class="overlay-number">#000000</div>
+      <div class="overlay-subject">Assunto do chamado</div>
+      <div class="overlay-meta">Setor: — • Técnico: — • Prioridade: —</div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    let timer;
+    let clockTimer;
+    let lastIds = new Set();
+    const $ = (id) => document.getElementById(id);
+
+    function badgeStatus(s){
+      if (s==='aberto') return '<span class="badge b-open">ABERTO</span>';
+      if (s==='em_andamento') return '<span class="badge b-prog">EM ANDAMENTO</span>';
+      if (s==='resolvido') return '<span class="badge b-done">RESOLVIDO</span>';
+      return '<span class="badge">'+s+'</span>';
+    }
+    function badgePrio(p){ return `<span class="prio p-${p||'baixa'}">${(p||'').toUpperCase()}</span>` }
+
+    let chartPrio, chartCat;
+    function renderCharts(data){
+      const prMap = { baixa:0, media:0, alta:0, urgente:0 };
+      (data.byPriority||[]).forEach(r=>{ prMap[r.priority||'baixa']=r.count; });
+      const catLabels = (data.byCategory||[]).map(r=>r.category||'—');
+      const catCounts = (data.byCategory||[]).map(r=>r.count);
+
+      const prData = { labels: Object.keys(prMap).map(s=>s.toUpperCase()), datasets:[{ data: Object.values(prMap), backgroundColor:['#22c55e','#eab308','#f97316','#ef4444'] }] };
+      const catData = { labels: catLabels, datasets:[{ data: catCounts, backgroundColor:'#60a5fa' }] };
+
+      if (chartPrio){ chartPrio.data = prData; chartPrio.update(); }
+      else chartPrio = new Chart($('#chartPriority'), { type:'bar', data: prData, options:{ plugins:{ legend:{ display:false }}, scales:{ x:{ ticks:{ color:'#9ca3af' }}, y:{ ticks:{ color:'#9ca3af' }}}}});
+
+      if (chartCat){ chartCat.data = catData; chartCat.update(); }
+      else chartCat = new Chart($('#chartCategory'), { type:'bar', data: catData, options:{ plugins:{ legend:{ display:false }}, scales:{ x:{ ticks:{ color:'#9ca3af' }}, y:{ ticks:{ color:'#9ca3af' }}}}});
+    }
+
+    function renderLists(data){
+      const items = [];
+      const currentIds = [];
+      let firstNewQueue = null;
+      (data.queue||[]).forEach(t=>{
+        const id = t.ticket_number || t.id;
+        currentIds.push(id);
+        const isNew = !lastIds.has(id);
+        if (isNew && !firstNewQueue) firstNewQueue = t;
+        items.push(`<div class="item${isNew ? ' flash' : ''}"><div class="left"><div><strong>#${t.ticket_number}</strong> ${badgePrio(t.priority)}</div><div style="opacity:.8;">${(t.subject||'Chamado').slice(0,80)}</div><div style="opacity:.7; font-size:18px;">Setor: ${(t.department||'—')} • Técnico: ${(t.assigned_name||'—')}</div></div>${badgeStatus('aberto')}</div>`);
+      });
+      (data.inProgress||[]).forEach(t=>{
+        const id = t.ticket_number || t.id;
+        currentIds.push(id);
+        const isNew = !lastIds.has(id);
+        items.push(`<div class="item${isNew ? ' flash' : ''}"><div class="left"><div><strong>#${t.ticket_number}</strong> ${badgePrio(t.priority)}</div><div style="opacity:.8;">${(t.subject||'Chamado').slice(0,80)}</div><div style="opacity:.7; font-size:18px;">Setor: ${(t.department||'—')} • Técnico: ${(t.assigned_name||'—')}</div></div>${badgeStatus('em_andamento')}</div>`);
+      });
+      if (items.length===0) items.push('<div style="opacity:.7; text-align:center; padding:20px;">Sem chamados para exibir</div>');
+      $('#list-main').innerHTML = items.join('');
+      if (firstNewQueue) showOverlay(firstNewQueue);
+      lastIds = new Set(currentIds);
+    }
+
+    async function load(){
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) { window.location.href = '/login.html'; return; }
+        const res = await fetch('/api/metrics/tv', { headers: { 'Authorization': `Bearer ${token}` }});
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message||'Falha');
+        $('#c-total').textContent = data.counts.total;
+        $('#c-abertos').textContent = data.counts.aberto;
+        $('#c-prog').textContent = data.counts.em_andamento;
+        $('#c-res').textContent = data.counts.resolvido;
+        renderCharts(data);
+        renderLists(data);
+        $('#lastUpdate').textContent = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+      } catch(e){ console.error(e); }
+    }
+
+    function updateClock(){ const now = new Date(); const opts = {hour:'2-digit',minute:'2-digit',second:'2-digit'}; const el = $('#clock'); if (el) el.textContent = now.toLocaleTimeString('pt-BR', opts); }
+
+    let overlayTimer;
+    function showOverlay(t){
+      const ov = $('#newOverlay');
+      if (!ov) return;
+      ov.querySelector('.overlay-number').textContent = `#${t.ticket_number}`;
+      ov.querySelector('.overlay-subject').textContent = (t.subject||'Chamado');
+      ov.querySelector('.overlay-meta').textContent = `Setor: ${t.department||'—'} • Técnico: ${t.assigned_name||'—'} • Prioridade: ${(t.priority||'').toUpperCase()}`;
+      ov.style.display = 'flex';
+      clearTimeout(overlayTimer);
+      overlayTimer = setTimeout(()=>{ ov.style.display = 'none'; }, 5000);
+    }
+
+    function init(){
+      load();
+      timer = setInterval(load, 10000);
+      updateClock();
+      clockTimer = setInterval(updateClock, 1000);
+      document.addEventListener('visibilitychange',()=>{ if(!document.hidden) load(); });
+    }
+    document.addEventListener('DOMContentLoaded', init);
+    window.addEventListener('beforeunload', ()=> { if (timer) clearInterval(timer); if (clockTimer) clearInterval(clockTimer); });
+  </script>
+</body>
+</html>

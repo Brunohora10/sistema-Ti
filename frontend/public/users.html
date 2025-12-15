@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Usuários - Sistema TI</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/dark-mode.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <span>🎫</span>
+          <span>Sistema TI</span>
+        </div>
+      </div>
+
+      <div class="sidebar-user" id="sidebarUser">
+        <div class="sidebar-user-name" id="userName">Carregando...</div>
+        <div class="sidebar-user-role" id="userRole"></div>
+      </div>
+
+      <nav>
+        <ul class="sidebar-nav">
+          <li class="sidebar-nav-item">
+            <a href="/dashboard.html" class="sidebar-nav-link">
+              <span class="sidebar-nav-icon">📋</span>
+              <span>Chamados</span>
+            </a>
+          </li>
+          <li class="sidebar-nav-item">
+            <a href="/metrics.html" class="sidebar-nav-link">
+              <span class="sidebar-nav-icon">📊</span>
+              <span>Métricas</span>
+            </a>
+          </li>
+          <li class="sidebar-nav-item">
+            <a href="/users.html" class="sidebar-nav-link active">
+              <span class="sidebar-nav-icon">👥</span>
+              <span>Usuários</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="btn btn-danger btn-block btn-sm" onclick="logout()">
+          🚪 Sair
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="dashboard-header">
+        <h1 class="dashboard-title">👥 Gerenciamento de Usuários</h1>
+        <div class="dashboard-actions">
+          <button class="btn btn-secondary btn-sm" onclick="toggleDarkMode()" title="Alternar tema">
+            <span id="themeIcon">🌙</span>
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="loadUsers()">
+            🔄 Atualizar
+          </button>
+        </div>
+      </div>
+
+      <!-- Criar Usuário -->
+      <div class="card" style="padding: 20px; margin-bottom: 20px;">
+        <h3 style="margin-bottom: 15px;">➕ Criar Novo Usuário</h3>
+        <form id="createUserForm" style="display: grid; gap: 15px;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+            <input type="text" id="name" class="form-control" placeholder="Nome de usuário" required>
+            <input type="email" id="email" class="form-control" placeholder="Email (opcional)">
+            <input type="tel" id="phone" class="form-control" placeholder="Telefone/WhatsApp (opcional)" maxlength="15">
+            <input type="password" id="password" class="form-control" placeholder="Senha (mín. 6 caracteres)" required minlength="6">
+            <select id="role" class="form-control" required>
+              <option value="">Selecione a função...</option>
+              <option value="AUXILIAR">AUXILIAR - Operador</option>
+              <option value="COORDENADOR">COORDENADOR - Supervisor</option>
+              <option value="DESENVOLVEDOR">DESENVOLVEDOR - Admin</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" type="submit">✅ Criar Usuário</button>
+        </form>
+      </div>
+
+      <!-- Lista de Usuários -->
+      <div class="card" style="padding: 20px;">
+        <h3 style="margin-bottom: 15px;">📋 Lista de Usuários</h3>
+        <div id="usersList" style="min-height: 200px;">Carregando usuários...</div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/utils.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/users.js"></script>
+  
+  <!-- Modal de Edição de Usuário -->
+  <div id="editUserModal" style="display:none; position:fixed; inset:0; background: rgba(0,0,0,0.4); align-items:center; justify-content:center; z-index:1000;">
+    <div style="background:#fff; width: 95%; max-width: 540px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">
+      <div style="padding:16px 20px; border-bottom:1px solid #eee; display:flex; align-items:center; justify-content:space-between;">
+        <h3 style="margin:0;">✏️ Editar Usuário</h3>
+        <button id="closeEditModalBtn" class="btn btn-secondary btn-sm">Fechar</button>
+      </div>
+      <div style="padding:20px;">
+        <form id="editUserForm" style="display:grid; gap:12px;">
+          <input type="hidden" id="editUserId">
+          <div style="display:grid; grid-template-columns:1fr; gap:10px;">
+            <input type="text" id="editName" class="form-control" placeholder="Nome de usuário" required>
+            <input type="email" id="editEmail" class="form-control" placeholder="Email (opcional)">
+            <input type="tel" id="editPhone" class="form-control" placeholder="Telefone/WhatsApp (opcional)" maxlength="15">
+            <select id="editRole" class="form-control" required>
+              <option value="DESENVOLVEDOR">DESENVOLVEDOR - Admin</option>
+              <option value="COORDENADOR">COORDENADOR - Supervisor</option>
+              <option value="AUXILIAR">AUXILIAR - Operador</option>
+            </select>
+            <input type="password" id="editNewPassword" class="form-control" placeholder="Nova senha (opcional, mín. 6)">
+            <input type="password" id="editConfirmPassword" class="form-control" placeholder="Confirmar nova senha (opcional)">
+            <label style="display:flex; align-items:center; gap:8px; font-size:14px; color:#333;">
+              <input type="checkbox" id="editActive"> Ativo
+            </label>
+          </div>
+          <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:8px;">
+            <button type="button" id="cancelEditBtn" class="btn btn-secondary">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

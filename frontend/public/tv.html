@@ -208,6 +208,7 @@
     }
 
     function init(){
+      console.log('🔧 Inicializando TV...');
       load();
       timer = setInterval(load, 10000);
       updateClock();
@@ -215,7 +216,13 @@
       connectSocket();
       document.addEventListener('visibilitychange',()=>{ if(!document.hidden) load(); });
     }
-    document.addEventListener('DOMContentLoaded', init);
+    
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+    
     window.addEventListener('beforeunload', ()=> { if (timer) clearInterval(timer); if (clockTimer) clearInterval(clockTimer); });
   </script>
 </body>

@@ -194,33 +194,33 @@ if (phoneInput) {
   });
 }
 
-// Informações sobre prioridade
-document.getElementById('priority').addEventListener('change', function() {
-  const priority = this.value;
-  const descriptions = {
-    'baixa': '🟢 Tempo de resposta: até 24 horas',
-    'media': '🟡 Tempo de resposta: até 8 horas',
-    'alta': '🟠 Tempo de resposta: até 4 horas',
-    'urgente': '🔴 Tempo de resposta: até 2 horas'
-  };
-  
-  // Criar ou atualizar descrição
-  let desc = this.parentElement.querySelector('.priority-desc');
-  if (!desc) {
-    desc = document.createElement('small');
-    desc.className = 'priority-desc';
-    desc.style.cssText = 'display: block; margin-top: 5px; font-weight: 600;';
-    this.parentElement.appendChild(desc);
-  }
-  
-  if (priority && descriptions[priority]) {
-    desc.textContent = descriptions[priority];
-    desc.style.color = priority === 'urgente' ? 'var(--danger)' : 
-                       priority === 'alta' ? 'var(--warning)' : 
-                       'var(--success)';
-  } else {
-    desc.textContent = '';
-  }
-});
+// Informações sobre prioridade - REMOVIDO
+// document.getElementById('priority').addEventListener('change', function() {
+//   const priority = this.value;
+//   const descriptions = {
+//     'baixa': '🟢 Tempo de resposta: até 24 horas',
+//     'media': '🟡 Tempo de resposta: até 8 horas',
+//     'alta': '🟠 Tempo de resposta: até 4 horas',
+//     'urgente': '🔴 Tempo de resposta: até 2 horas'
+//   };
+//   
+//   // Criar ou atualizar descrição
+//   let desc = this.parentElement.querySelector('.priority-desc');
+//   if (!desc) {
+//     desc = document.createElement('small');
+//     desc.className = 'priority-desc';
+//     desc.style.cssText = 'display: block; margin-top: 5px; font-weight: 600;';
+//     this.parentElement.appendChild(desc);
+//   }
+//   
+//   if (priority && descriptions[priority]) {
+//     desc.textContent = descriptions[priority];
+//     desc.style.color = priority === 'urgente' ? 'var(--danger)' : 
+//                        priority === 'alta' ? 'var(--warning)' : 
+//                        'var(--success)';
+//   } else {
+//     desc.textContent = '';
+//   }
+// });
 
 console.log('✅ Portal do Usuário carregado');

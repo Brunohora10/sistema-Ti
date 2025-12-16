@@ -161,15 +161,15 @@ router.post('/', upload.single('attachment'), async (req, res) => {
       [result.id]
     );
 
-    // Buscar todos os técnicos ativos para notificar
-    const technicians = await getAll(
-      'SELECT id, name, email FROM users WHERE active = 1'
+    // Buscar TODOS os colaboradores ativos para notificar (não apenas técnicos)
+    const allUsers = await getAll(
+      'SELECT id, name, email FROM users WHERE active = 1 AND email IS NOT NULL AND email != ""'
     );
 
     // Enviar emails (não bloqueia a resposta)
     Promise.all([
       emailService.sendTicketConfirmationEmail(ticket),
-      emailService.sendNewTicketEmail(ticket, technicians)
+      emailService.sendNewTicketEmail(ticket, allUsers)
     ]).catch(err => console.error('Erro ao enviar emails:', err));
 
     // Emitir evento Socket.io para atualização em tempo real

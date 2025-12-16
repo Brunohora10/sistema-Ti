@@ -318,6 +318,10 @@
     // Histórico
     let lastSearchedTicket = null;
 
+    function escapeHTML(str){
+      return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s]));
+    }
+
     // Carregar técnicos na lista
     async function loadTechnicians() {
       try {

@@ -89,7 +89,7 @@
         <canvas id="chartCategory" style="margin-top:14px;"></canvas>
       </div>
     </div>
-    <div class="footer">Atualiza automaticamente a cada 10s | Ideal para TV</div>
+    <div class="footer">Sistema de Chamados TI | Painel TV</div>
   </div>
 
   <!-- Overlay de Novo Chamado -->
@@ -103,6 +103,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
   <script>
     let timer;
     let clockTimer;
@@ -188,11 +189,30 @@
       overlayTimer = setTimeout(()=>{ ov.style.display = 'none'; }, 5000);
     }
 
+    // Socket.io para atualizações em tempo real
+    let socket;
+    function connectSocket(){
+      try{
+        socket = io();
+        socket.on('new_ticket', (ticket)=>{
+          console.log('Novo chamado recebido via Socket.io:', ticket);
+          load(); // Recarrega dados
+        });
+        socket.on('ticket_updated', (ticket)=>{
+          console.log('Chamado atualizado via Socket.io:', ticket);
+          load(); // Recarrega dados
+        });
+        socket.on('connect', ()=>console.log('Socket.io conectado'));
+        socket.on('disconnect', ()=>console.log('Socket.io desconectado'));
+      } catch(e){ console.error('Erro ao conectar Socket.io:', e); }
+    }
+
     function init(){
       load();
       timer = setInterval(load, 10000);
       updateClock();
       clockTimer = setInterval(updateClock, 1000);
+      connectSocket();
       document.addEventListener('visibilitychange',()=>{ if(!document.hidden) load(); });
     }
     document.addEventListener('DOMContentLoaded', init);

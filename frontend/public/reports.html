@@ -609,10 +609,6 @@
       document.getElementById('historyContainer').style.display = 'block';
     }
 
-    function escapeHTML(str){
-      return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s]));
-    }
-
     // Enter para buscar histórico
     document.addEventListener('DOMContentLoaded', ()=>{
       const inp = document.getElementById('ticketSearch');

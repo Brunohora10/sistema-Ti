@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: sistema-ti-chamados
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install
+    startCommand: npm run start:prod
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DB_PATH
+        value: /opt/render/project/data/tickets.db
+      - key: BACKUP_DIR
+        value: /opt/render/project/data/backups
+      - key: BACKUP_DAYS_RETENTION
+        value: 7
+    disk:
+      name: data
+      mountPath: /opt/render/project/data
+      sizeGB: 1
